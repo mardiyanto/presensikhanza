@@ -1,4 +1,8 @@
-<?php
+             <div class="row">
+                    <!-- <div style="text-align:center" class="col-lg-5 " id="my_camera"></div> -->
+                    <div class="col-lg-7">
+                        <div class="p-5">
+                            <div class="text-center"> <?php
                 $BtnSimpan=isset($_POST['BtnSimpan'])?$_POST['BtnSimpan']:NULL;
                 if (isset($BtnSimpan)) {
                     $jam_masuk      = validTeks3(trim($_POST['jam_masuk']));  
@@ -23,18 +27,7 @@
                     @$toleransi      = $barisketerlambatan[0];
                     @$terlambat1     = $barisketerlambatan[1];
                     @$terlambat2     = $barisketerlambatan[2];
-                    
-                    if(file_exists(host()."webapps/presensi/gambar/".$hariini.$shift.$idpeg.".jpeg")){
-                        @unlink(host()."webapps/presensi/gambar/".$hariini.$shift.$idpeg.".jpeg");
-                    }
-                    
-                    @$img            = $_POST["image"];
-                    @$image_parts    = explode(";base64,", $img);
-                    @$image_type_aux = explode("image/", $image_parts[0]);
-                    @$image_type     = $image_type_aux[1];
-                    @$image_base64   = base64_decode($image_parts[1]);
-                    @$file           = $hariini.$shift.$idpeg.".jpeg";
-                    @file_put_contents($file, $image_base64);
+         
                     
                     //echo "Jam Masuk : ".$jam_masuk." ID : ".$idpeg."departemen : $departemen  Shift : $shift";
                     
@@ -58,15 +51,11 @@
                         
                         
                         if(empty($idcek)){
-                            if(empty($img)){
-                                echo "<font size='9'>Pilih shift dulu !!!!!!!</font>";
-                            }else{
-                                Tambah2("temporary_presensi","'$idpeg','$shift',NOW(),NULL,
+                            Tambah2("temporary_presensi","'$idpeg','$shift',NOW(),NULL,
                                 if(TIME_TO_SEC(now())-TIME_TO_SEC($jam)>($toleransi*60),if(TIME_TO_SEC(now())-TIME_TO_SEC($jam)>($terlambat1*60),if(TIME_TO_SEC(now())-TIME_TO_SEC($jam)>($terlambat2*60),'Terlambat II','Terlambat I'),'Terlambat Toleransi'),'Tepat Waktu'),
                                 if(TIME_TO_SEC(now())-TIME_TO_SEC($jam)>($toleransi*60),SEC_TO_TIME(TIME_TO_SEC(now())-TIME_TO_SEC($jam)),''),'','$file'", 
                                 " Presensi Masuk jam $jam_masuk ".getOne("select if(TIME_TO_SEC(now())-TIME_TO_SEC($jam)>($toleransi*60),concat('Keterlambatan ',SEC_TO_TIME(TIME_TO_SEC(now())-TIME_TO_SEC($jam))),'')"));
-                                echo"<html><head><title></title><meta http-equiv='refresh' content='3;URL=?page=Input'></head><body></body></html>";
-                            }                            
+                                echo"<html><head><title></title><meta http-equiv='refresh' content='3;URL=?page=Input'></head><body></body></html>"; 
                         }elseif(!empty($idcek)){  
                             $jamdatang=getOne("select jam_jaga.jam_masuk from jam_jaga inner join pegawai on pegawai.departemen=jam_jaga.dep_id where jam_jaga.shift='$shift' and pegawai.id='$idcek'");
                             $jampulang=getOne("select jam_jaga.jam_pulang from jam_jaga inner join pegawai on pegawai.departemen=jam_jaga.dep_id where jam_jaga.shift='$shift' and pegawai.id='$idcek'");
@@ -105,23 +94,21 @@
                     }
                 }
             ?>
-            <div class="row">
-                    <div style="text-align:center" class="col-lg-5 " id="my_camera"></div>
-                    <div class="col-lg-7">
-                        <div class="p-5">
-                            <div class="text-center">
-                                <h1 class="h4 text-gray-900 mb-4">::[ Input Presensi Pegawai (foto diambil saat memilih shift) ]::</h1>
+							<button type="button" class="btn btn-outline-success btn-lg"><?php
+echo "Sekarang Jam " . date("h:i:sa");
+?></button><p id="status"></p>
+                                <h1 class="h4 text-gray-900 mb-4">::[ Absen Berdasarkan jam (jam datang = jam pulang) ]::</h1>
                             </div>
-                            <form name="frmPresensi" id="frmPresensi" method="post" onsubmit="return validasiIsi();" class="user">
+                            <form name="frmPresensi" id="frmPresensi" style="display: none;" method="post" onsubmit="return validasiIsi();" class="user">
 							<input type="hidden" name="image" class="image-tag" onkeydown="setDefault(this, document.getElementById('MsgIsi1'));" id="TxtIsi1">   
                                 <div class="form-group row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
 									<select class="custom-select my-1 mr-sm-2" name="jam_masuk" onkeydown="setDefault(this, document.getElementById('MsgIsi2'));" id="TxtIsi2">
-									<option selected>--Pilih Jam--</option>
- <?php
+									<option selected>--Pilih Shift--</option>
+                                        <?php
                                             $hasil=bukaquery("select jam_masuk,shift from jam_jaga group by jam_masuk");
                                             while($baris = mysqli_fetch_array($hasil)) {   
-                                                echo "<option id='TxtIsi2' value='$baris[0]'>$baris[0] $baris[1]</option>";
+                                                echo "<option id='TxtIsi2' value='$baris[0]'>Shift $baris[1] ($baris[0])</option>";
                                             }
                                         ?>
   </select><span id="MsgIsi2" style="color:#CC0000; font-size:10px;"></span>
@@ -141,8 +128,9 @@
                         </div>
                     </div>
                 </div>
-
-            <script language="JavaScript">
+				
+<div id="map"></div>
+            <!-- <script language="JavaScript">
                 Webcam.set({
                     width: 370,
                     height: 300,
@@ -158,7 +146,7 @@
                         document.getElementById('results').innerHTML = '<img src="'+data_uri+'"/>';
                     } );
                 }
-            </script>
+            </script> -->
            
             </form>
            </div>
